@@ -520,7 +520,11 @@
           , 'Esf'
         ]
         , jMonthsShort: function (m) {
-          return this._jMonthsShort[m.jMonth()]
+          if(moment.isMoment(m)){
+            return this._jMonthsShort[m.jMonth()]
+          }else{
+            return this._jMonthsShort;
+          }
         }
 
         , jMonthsParse: function (monthName) {
@@ -809,6 +813,23 @@
         strict = lang
         lang = undefined
       }
+
+      if(isArray(input)){
+        for(var i = input.length;i<7;i++){
+          if(i<3){
+            input[i] = 1;
+          }else{
+            input[i] = 0;
+          } 
+        }
+        format = 'jYYYY/jM/jD HH:mm:ss';
+        input = leftZeroFill(input[0], 4) + '-'
+            + leftZeroFill(input[1] + 1, 2) + '-'
+            + leftZeroFill(input[2], 2) + ' '
+            + leftZeroFill(input[3], 2) + ':'
+            + leftZeroFill(input[4], 2) + ':'
+            + leftZeroFill(input[5], 2) 
+      }
       var config =
         {
           _i: input
@@ -948,11 +969,28 @@
       }
     }
 
+    jMoment.fn.jDay = function(input){
+      if (typeof input === 'number') {
+        
+        return this;
+      }else{
+        var day = moment.fn.day.call(this,input) + 1;
+        if(day==7){
+          day =0;
+        }
+        return day;
+      }
+    }
+
     jMoment.fn.jDayOfYear = function (input) {
       var dayOfYear = Math.round((jMoment(this).startOf('day') - jMoment(this).startOf('jYear')) / 864e5) + 1
       return input == null ? dayOfYear : this.add(input - dayOfYear, 'd')
     }
-
+    
+    jMoment.fn.jDaysInMonth = function () {
+		  return parseInt(jMoment(this).endOf('jMonth').format('jDD'));
+    }
+    
     jMoment.fn.jWeek = function (input) {
       var week = jWeekOfYear(this, this.localeData()._week.dow, this.localeData()._week.doy).week
       return input == null ? week : this.add((input - week) * 7, 'd')
@@ -1066,7 +1104,7 @@
     jMoment.jIsLeapYear = jalaali.isLeapJalaaliYear
 
     jMoment.loadPersian = function () {
-      moment.locale('fa'
+      moment.defineLocale('fa'
         , {
           months: ('ژانویه_فوریه_مارس_آوریل_مه_ژوئن_ژوئیه_اوت_سپتامبر_اکتبر_نوامبر_دسامبر').split('_')
           , monthsShort: ('ژانویه_فوریه_مارس_آوریل_مه_ژوئن_ژوئیه_اوت_سپتامبر_اکتبر_نوامبر_دسامبر').split('_')
@@ -1160,6 +1198,6 @@
   } else if (typeof define == "function" && define.amd) {
     define([], function () { return require("moment-jalaali"); });
   } else {
-    this["moment"] = require("moment-jalaali");
+    this["jMoment"] = require("moment-jalaali");
   }
 })();
